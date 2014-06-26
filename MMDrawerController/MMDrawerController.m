@@ -1304,6 +1304,36 @@ static inline CGFloat originXForDrawerOriginAndTargetOriginOffset(CGFloat origin
     }
 }
 
+- (BOOL)gestureRecognizerShouldBegin:(UIPanGestureRecognizer *)panGestureRecognizer
+{
+    if ([panGestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+        CGPoint translation = [panGestureRecognizer translationInView:[panGestureRecognizer view]];
+        return (fabs(translation.x) / fabs(translation.y) > 1) ? YES : NO;
+    }
+    return YES;
+}
+
+// Only for support left pan gesture in centerview
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
+{
+    if ([otherGestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+        CGPoint translation = [(UIPanGestureRecognizer *)otherGestureRecognizer translationInView:otherGestureRecognizer.view];
+        if (fabs(translation.x) > fabs(translation.y) && translation.x < 0 && translation.y == 0) {
+            return YES;
+        }
+    }
+    if ([otherGestureRecognizer isKindOfClass:[UISwipeGestureRecognizer class]]) {
+        if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
+            CGPoint translation = [(UIPanGestureRecognizer *)gestureRecognizer translationInView:gestureRecognizer.view];
+            if (translation.x < 0) {
+                return YES;
+            }
+        }
+    }
+    return NO;
+}
+
+
 #pragma mark Gesture Recogizner Delegate Helpers
 -(MMCloseDrawerGestureMode)possibleCloseGestureModesForGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer withTouch:(UITouch*)touch{
     CGPoint point = [touch locationInView:self.childControllerContainerView];
